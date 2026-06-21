@@ -1,6 +1,56 @@
-# 🛒 E-Commerce App — Full Stack
+# 🛒 React E-Commerce — Full Stack
 
-A full-stack e-commerce application built with **React + MUI** (frontend) and **Node.js + Express + MongoDB** (backend).
+A production-ready full-stack e-commerce application built with **React + MUI** on the frontend and **Node.js + Express + MongoDB Atlas** on the backend.
+
+---
+
+## 🖥️ Live Preview
+
+> Run locally following the setup guide below.
+
+---
+
+## ✨ Features
+
+### 🛍️ Shopping
+- Browse products with filtering by gender, category, price range
+- Sort by newest, popular, price, and rating
+- Pagination and search with autocomplete
+- Product detail page with image gallery, sizes, colors, and reviews
+- Shopping cart with quantity controls, free shipping progress bar, and coupon codes
+
+### 🔐 Authentication
+- Register and login with JWT
+- Protected routes for checkout, orders, and profile
+- Persistent sessions via localStorage
+- Admin role with dashboard access
+
+### 📦 Orders
+- Full checkout flow with shipping address form
+- Order history with status tracking
+- Order detail page with cancel option
+- Cart auto-clears after successful order
+
+### 👤 User Account
+- Update profile info (name, phone)
+- Change password
+- Wishlist (toggle favorites)
+
+### 🛠️ Admin Dashboard
+- Revenue, orders, products, and users stats
+- Manage and update order statuses
+- Add and delete products
+- Real-time category management
+
+### 🎨 UI/UX
+- Dark / Light mode (persisted)
+- Skeleton loading cards
+- Toast notifications
+- Error Boundary for crash handling
+- Custom 404 page
+- SEO page titles
+- Confirm dialogs before destructive actions
+- Responsive — mobile drawer navigation
 
 ---
 
@@ -8,32 +58,52 @@ A full-stack e-commerce application built with **React + MUI** (frontend) and **
 
 ### Prerequisites
 - Node.js v18+
-- MongoDB (local or MongoDB Atlas)
+- MongoDB Atlas account (free tier works)
 
 ---
 
-### 1. Setup Backend
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/Latreche-khalil14/React-E-commerce.git
+cd React-E-commerce
+```
+
+### 2. Setup Backend
 
 ```bash
 cd backend
 cp .env.example .env
-# Edit .env and set your MONGO_URI and JWT_SECRET
-npm install
-npm run seed      # Seed database with sample data
-npm run dev       # Start backend on http://localhost:5000
 ```
 
-### 2. Setup Frontend
+Edit `.env` and fill in your values:
+
+```env
+PORT=5000
+NODE_ENV=development
+MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/ecommerce
+JWT_SECRET=your_secret_key_here
+JWT_EXPIRE=30d
+CLIENT_URL=http://localhost:5173
+```
 
 ```bash
-# In the root directory
 npm install
-npm run dev       # Start frontend on http://localhost:5173
+npm run seed      # Seed database with sample data
+npm run dev       # Start API on http://localhost:5000
+```
+
+### 3. Setup Frontend
+
+```bash
+# Back in the root directory
+npm install
+npm run dev       # Start app on http://localhost:5173
 ```
 
 ---
 
-## 🔐 Demo Credentials (after seeding)
+## 🔐 Demo Credentials
 
 | Role  | Email                   | Password     |
 |-------|-------------------------|--------------|
@@ -45,129 +115,179 @@ npm run dev       # Start frontend on http://localhost:5173
 ## 📁 Project Structure
 
 ```
-React-ecomerce/
-├── src/                        ← React Frontend
-│   ├── api/                    ← API service functions
-│   │   ├── axios.js            ← Axios instance + interceptors
+React-E-commerce/
+│
+├── src/                          ← React Frontend (Vite)
+│   ├── api/                      ← Axios service functions
+│   │   ├── axios.js              ← Instance + interceptors
 │   │   ├── auth.api.js
 │   │   ├── products.api.js
 │   │   ├── cart.api.js
 │   │   ├── orders.api.js
 │   │   └── categories.api.js
-│   ├── context/                ← Global state (React Context)
-│   │   ├── AuthContext.jsx     ← User auth state
-│   │   └── CartContext.jsx     ← Cart state
-│   ├── pages/                  ← Route pages
+│   │
+│   ├── context/                  ← Global state
+│   │   ├── AuthContext.jsx       ← User auth (login, logout, token)
+│   │   └── CartContext.jsx       ← Cart state + actions
+│   │
+│   ├── hooks/
+│   │   └── usePageTitle.js       ← Dynamic browser tab titles
+│   │
+│   ├── pages/                    ← Route-level pages
 │   │   ├── HomePage.jsx
 │   │   ├── LoginPage.jsx
 │   │   ├── RegisterPage.jsx
+│   │   ├── ProductPage.jsx       ← Product detail + reviews
 │   │   ├── CartPage.jsx
 │   │   ├── CheckoutPage.jsx
 │   │   ├── OrdersPage.jsx
 │   │   ├── OrderDetailPage.jsx
-│   │   └── ProfilePage.jsx
-│   └── components/             ← Reusable UI components
+│   │   ├── ProfilePage.jsx
+│   │   ├── AdminPage.jsx
+│   │   └── NotFoundPage.jsx
+│   │
+│   └── components/
+│       ├── common/               ← Shared UI components
+│       │   ├── ErrorBoundary.jsx
+│       │   ├── ProductSkeleton.jsx
+│       │   ├── ConfirmDialog.jsx
+│       │   └── EmptyState.jsx
+│       ├── header/               ← Header1, Header2, Header3, Links
+│       ├── hero/                 ← Hero slider + IconSection
+│       ├── main/                 ← Products grid + ProductDetails
+│       ├── footer/               ← Footer with links
+│       └── scroll/               ← ScrollToTop button
 │
-└── backend/                    ← Node.js API
-    ├── server.js               ← Express app entry point
-    ├── models/                 ← Mongoose models
+└── backend/                      ← Node.js REST API
+    ├── server.js                 ← Express entry point
+    ├── .env.example              ← Environment variables template
+    │
+    ├── models/                   ← Mongoose schemas
     │   ├── User.model.js
     │   ├── Product.model.js
     │   ├── Category.model.js
     │   ├── Cart.model.js
     │   └── Order.model.js
-    ├── controllers/            ← Route handlers
-    ├── routes/                 ← Express routes
-    ├── middleware/             ← Auth, validation
-    └── utils/seeder.js         ← Database seeder
+    │
+    ├── controllers/              ← Route logic
+    │   ├── auth.controller.js
+    │   ├── product.controller.js
+    │   ├── cart.controller.js
+    │   ├── order.controller.js
+    │   ├── user.controller.js
+    │   └── category.controller.js
+    │
+    ├── routes/                   ← Express routers
+    ├── middleware/               ← Auth, validation
+    └── utils/
+        └── seeder.js             ← Database seeder (34 products)
 ```
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 API Reference
 
 ### Auth
-| Method | Endpoint             | Access  | Description       |
-|--------|----------------------|---------|-------------------|
-| POST   | /api/auth/register   | Public  | Register user     |
-| POST   | /api/auth/login      | Public  | Login user        |
-| GET    | /api/auth/me         | Private | Get current user  |
-| PUT    | /api/auth/password   | Private | Update password   |
+| Method | Endpoint           | Access  | Description      |
+|--------|--------------------|---------|------------------|
+| POST   | /api/auth/register | Public  | Create account   |
+| POST   | /api/auth/login    | Public  | Login            |
+| GET    | /api/auth/me       | Private | Current user     |
+| PUT    | /api/auth/password | Private | Change password  |
 
 ### Products
-| Method | Endpoint                      | Access       | Description          |
-|--------|-------------------------------|--------------|----------------------|
-| GET    | /api/products                 | Public       | Get all products     |
-| GET    | /api/products/featured        | Public       | Get featured         |
-| GET    | /api/products/:id             | Public       | Get single product   |
-| POST   | /api/products                 | Admin        | Create product       |
-| PUT    | /api/products/:id             | Admin        | Update product       |
-| DELETE | /api/products/:id             | Admin        | Delete product       |
-| POST   | /api/products/:id/reviews     | Private      | Add review           |
+| Method | Endpoint                  | Access  | Description        |
+|--------|---------------------------|---------|--------------------|
+| GET    | /api/products             | Public  | List with filters  |
+| GET    | /api/products/featured    | Public  | Featured products  |
+| GET    | /api/products/:id         | Public  | Single product     |
+| POST   | /api/products             | Admin   | Create product     |
+| PUT    | /api/products/:id         | Admin   | Update product     |
+| DELETE | /api/products/:id         | Admin   | Delete product     |
+| POST   | /api/products/:id/reviews | Private | Add review         |
+
+### Query Parameters for `/api/products`
+```
+?search=shirt
+?gender=men|women|unisex
+?category=<id>
+?categorySlug=electronics
+?minPrice=10&maxPrice=100
+?sort=newest|popular|price-asc|price-desc|rating
+?page=1&limit=12
+?featured=true
+```
 
 ### Cart
-| Method | Endpoint            | Access  | Description       |
-|--------|---------------------|---------|-------------------|
-| GET    | /api/cart           | Private | Get user cart     |
-| POST   | /api/cart           | Private | Add to cart       |
-| PUT    | /api/cart/:itemId   | Private | Update quantity   |
-| DELETE | /api/cart/:itemId   | Private | Remove item       |
-| DELETE | /api/cart/clear     | Private | Clear cart        |
+| Method | Endpoint          | Access  | Description     |
+|--------|-------------------|---------|-----------------|
+| GET    | /api/cart         | Private | Get cart        |
+| POST   | /api/cart         | Private | Add item        |
+| PUT    | /api/cart/:itemId | Private | Update quantity |
+| DELETE | /api/cart/:itemId | Private | Remove item     |
+| DELETE | /api/cart/clear   | Private | Clear cart      |
 
 ### Orders
 | Method | Endpoint                | Access  | Description         |
 |--------|-------------------------|---------|---------------------|
-| POST   | /api/orders             | Private | Create order        |
-| GET    | /api/orders/my          | Private | Get my orders       |
-| GET    | /api/orders/:id         | Private | Get order detail    |
+| POST   | /api/orders             | Private | Place order         |
+| GET    | /api/orders/my          | Private | My orders           |
+| GET    | /api/orders/:id         | Private | Order detail        |
 | PUT    | /api/orders/:id/cancel  | Private | Cancel order        |
-| GET    | /api/orders             | Admin   | Get all orders      |
-| PUT    | /api/orders/:id/status  | Admin   | Update order status |
-
-### Product Query Params
-```
-GET /api/products?search=shirt&category=<id>&gender=men&minPrice=10&maxPrice=100&sort=newest&page=1&limit=12
-```
+| GET    | /api/orders             | Admin   | All orders          |
+| PUT    | /api/orders/:id/status  | Admin   | Update status       |
 
 ---
 
-## ✨ Features
+## 🛠️ Tech Stack
 
-- **Authentication** — Register, Login, JWT tokens, persistent sessions
-- **Products** — Filtering by category/gender/price, sorting, pagination, reviews
-- **Shopping Cart** — Add/remove/update items, stock validation, real-time badge
-- **Checkout** — Shipping address, payment method selection, order summary
-- **Orders** — Full order history, order detail, cancel orders
-- **User Profile** — View info, change password
-- **Dark/Light Mode** — Persisted to localStorage
-- **Security** — Helmet, CORS, rate limiting, bcrypt passwords, JWT
+| Layer     | Technology                                      |
+|-----------|-------------------------------------------------|
+| Frontend  | React 19, Vite 7, MUI v7, React Router v6       |
+| Backend   | Node.js v22, Express 4, MongoDB Atlas, Mongoose |
+| Auth      | JWT (jsonwebtoken), bcryptjs                    |
+| State     | React Context + useReducer                      |
+| HTTP      | Axios with request/response interceptors        |
+| Security  | Helmet, CORS, express-rate-limit                |
+| Dev Tools | Nodemon, ESLint                                 |
 
 ---
 
-## 🛠 Tech Stack
+## 🗂️ Categories & Products
 
-| Layer    | Technology                          |
-|----------|-------------------------------------|
-| Frontend | React 19, Vite, MUI v7, React Router v6 |
-| Backend  | Node.js, Express 4, MongoDB, Mongoose |
-| Auth     | JWT, bcryptjs                       |
-| State    | React Context + useReducer          |
-| HTTP     | Axios with interceptors             |
+The seeder creates **34 products** across **8 categories**:
+
+| Category    | Products |
+|-------------|----------|
+| Men         | 7        |
+| Women       | 7        |
+| Electronics | 7        |
+| Sports      | 3        |
+| Books       | 3        |
+| Bikes       | 3        |
+| Games       | 2        |
+| Kids        | 2        |
 
 ---
 
 ## 📦 Production Deployment
 
-### Backend (e.g., Railway / Render)
-1. Set environment variables from `.env.example`
+### Backend (Render / Railway)
+1. Set all environment variables from `.env.example`
 2. Set `NODE_ENV=production`
-3. Run `npm start`
+3. Deploy and run `npm start`
 
-### Frontend (e.g., Vercel / Netlify)
+### Frontend (Vercel / Netlify)
 1. Set `VITE_API_URL=https://your-backend-url.com/api`
-2. Run `npm run build`
-3. Deploy the `dist/` folder
+2. Build command: `npm run build`
+3. Publish directory: `dist`
 
 ---
 
-*Designed and developed by Khalil Latreche © 2025*
+## 📄 License
+
+MIT — free to use and modify.
+
+---
+
+*Designed and developed by **Khalil Latreche** © 2026*
