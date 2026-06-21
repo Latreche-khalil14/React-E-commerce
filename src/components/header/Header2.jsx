@@ -1,46 +1,27 @@
-
+// @ts-nocheck
 import { ExpandMore, ShoppingCartOutlined } from "@mui/icons-material";
-
-
 import {
-  Badge,
-  Container,
-  IconButton,
-  InputBase,
-  Stack,
-  Typography,
-  useTheme,
+  Avatar, Badge, Container, Divider, IconButton, InputBase,
+  List, ListItem, ListItemText, Menu, MenuItem, Stack,
+  Typography, useTheme,
 } from "@mui/material";
-
-
 import SearchIcon from "@mui/icons-material/Search";
-
-
-import { styled } from "@mui/material/styles";
-
-
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-
-
-import { useState } from "react";
-
-
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
-
+import { styled } from "@mui/material/styles";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
+import { getCategoriesApi } from "../../api/categories.api";
+import toast from "react-hot-toast";
 
 const Search = styled("div")(({ theme }) => ({
   flexGrow: 0.4,
   position: "relative",
   borderRadius: theme.shape.borderRadius,
   border: "1px solid #777",
-  "&:hover": {
-    border: "1px solid #333",
-  },
+  "&:hover": { border: "1px solid #333" },
   marginRight: theme.spacing(2),
   marginLeft: 0,
   width: "266px",
@@ -49,7 +30,6 @@ const Search = styled("div")(({ theme }) => ({
     width: "330px",
   },
 }));
-
 
 const SearchIconWrapper = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 2),
@@ -62,7 +42,6 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
   color: "#777",
 }));
 
-
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
   "& .MuiInputBase-input": {
@@ -70,9 +49,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "100%",
-    [theme.breakpoints.up("md")]: {
-      width: "20ch",
-    },
+    [theme.breakpoints.up("md")]: { width: "20ch" },
   },
 }));
 
@@ -85,120 +62,168 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
   },
 }));
 
-
-const options = ["All Categories", "CAR", "Clothes", "Electronics"];
-
+const categoryOptions = ["All Categories", "CAR", "Clothes", "Electronics"];
 
 const Header2 = () => {
-  const theme = useTheme();                            
-  const [anchorEl, setAnchorEl] = useState(null);      
-  const [selectedIndex, setSelectedIndex] = useState(0); 
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const { cartCount } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
 
-  const open = Boolean(anchorEl);                    
+  const [categoryAnchor,   setCategoryAnchor]   = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState({ name: "All Categories", id: null });
+  const [apiCategories,    setApiCategories]    = useState([]);
+  const [userAnchor,       setUserAnchor]       = useState(null);
+  const [searchQuery,      setSearchQuery]      = useState("");
 
-  const handleClickListItem = (event) => {
-    setAnchorEl(event.currentTarget);               
+  useEffect(() => {
+    getCategoriesApi()
+      .then((res) => setApiCategories(res.data.categories))
+      .catch(() => {});
+  }, []);
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      const params = new URLSearchParams();
+      params.set("search", searchQuery.trim());
+      if (selectedCategory.id) params.set("categoryId", selectedCategory.id);
+      navigate(`/?${params.toString()}`);
+    }
   };
 
-  const handleMenuItemClick = (event, index) => {
-    setSelectedIndex(index);                           
-    setAnchorEl(null);                                 
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);                               
+  const handleLogout = () => {
+    logout();
+    setUserAnchor(null);
+    toast.success("Logged out successfully");
+    navigate("/");
   };
 
   return (
-    <Container sx={{ my: 3, display: "flex", justifyContent: "space-between" }}>
-      
-   
-      <Stack alignItems={"center"}>
+    <Container sx={{ my: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      {/* Logo */}
+      <Stack alignItems="center" sx={{ cursor: "pointer" }} onClick={() => navigate("/")}>
         <ShoppingCartOutlined />
         <Typography variant="body2">E-commerce</Typography>
       </Stack>
 
-     
+      {/* Search */}
       <Search sx={{ display: "flex", borderRadius: "22px", justifyContent: "space-between" }}>
-        
         <SearchIconWrapper>
           <SearchIcon />
         </SearchIconWrapper>
 
         <StyledInputBase
-          placeholder="Search…"
+          placeholder="Search products…"
           inputProps={{ "aria-label": "search" }}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleSearch}
         />
 
         <div>
           <List
             component="nav"
-            aria-label="Device settings"
             sx={{
-          
-              // @ts-ignore
-              bgcolor: theme.palette.myColor.main,
+              bgcolor: theme.palette.myColor?.main,
               borderBottomRightRadius: 22,
               borderTopRightRadius: 22,
-              p: "0",
+              p: 0,
             }}
           >
             <ListItem
-              id="lock-button"
-              aria-haspopup="listbox"
-              aria-controls="lock-menu"
-              aria-label="select category"
-              aria-expanded={open ? "true" : undefined}
-              onClick={handleClickListItem}
+              onClick={(e) => setCategoryAnchor(e.currentTarget)}
+              sx={{ cursor: "pointer" }}
             >
               <ListItemText
-                sx={{
-                  width: 93,
-                  textAlign: "center",
-                  "&:hover": { cursor: "pointer" },
-                }}
-                secondary={options[selectedIndex]}
+                sx={{ width: 93, textAlign: "center" }}
+                secondary={selectedCategory.name}
               />
               <ExpandMore sx={{ fontSize: "16px" }} />
             </ListItem>
           </List>
 
-      
           <Menu
-            id="lock-menu"
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            MenuListProps={{
-              "aria-labelledby": "lock-button",
-              role: "listbox",
-            }}
+            anchorEl={categoryAnchor}
+            open={Boolean(categoryAnchor)}
+            onClose={() => setCategoryAnchor(null)}
           >
-            {options.map((option, index) => (
+            {/* All Categories option */}
+            <MenuItem
+              selected={!selectedCategory.id}
+              onClick={() => { setSelectedCategory({ name: "All Categories", id: null }); setCategoryAnchor(null); }}
+              sx={{ fontSize: "13px" }}
+            >
+              All Categories
+            </MenuItem>
+            {/* Dynamic categories from API */}
+            {apiCategories.map((cat) => (
               <MenuItem
+                key={cat._id}
+                selected={selectedCategory.id === cat._id}
+                onClick={() => { setSelectedCategory({ name: cat.name, id: cat._id }); setCategoryAnchor(null); }}
                 sx={{ fontSize: "13px" }}
-                key={option}
-                selected={index === selectedIndex}
-                onClick={(event) => handleMenuItemClick(event, index)}
               >
-                {option}
+                {cat.name}
               </MenuItem>
             ))}
           </Menu>
         </div>
       </Search>
 
-   
-      <Stack direction={"row"} alignItems={"center"}>
-        <IconButton aria-label="cart">
-          <StyledBadge badgeContent={4} color="primary">
+      {/* Cart & User */}
+      <Stack direction="row" alignItems="center">
+        {/* Cart */}
+        <IconButton aria-label="cart" onClick={() => navigate("/cart")}>
+          <StyledBadge badgeContent={cartCount} color="error">
             <ShoppingCartIcon />
           </StyledBadge>
         </IconButton>
 
-        <IconButton>
-          <Person2OutlinedIcon />
-        </IconButton>
+        {/* User */}
+        {isAuthenticated ? (
+          <>
+            <IconButton onClick={(e) => setUserAnchor(e.currentTarget)}>
+              <Avatar
+                src={user?.avatar?.url}
+                sx={{ width: 32, height: 32, fontSize: 14, bgcolor: "#D23F57" }}
+              >
+                {user?.name?.[0]?.toUpperCase()}
+              </Avatar>
+            </IconButton>
+
+            <Menu
+              anchorEl={userAnchor}
+              open={Boolean(userAnchor)}
+              onClose={() => setUserAnchor(null)}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            >
+              <MenuItem disabled>
+                <Typography variant="body2" fontWeight={600}>{user?.name}</Typography>
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={() => { navigate("/profile"); setUserAnchor(null); }}>
+                My Profile
+              </MenuItem>
+              <MenuItem onClick={() => { navigate("/orders"); setUserAnchor(null); }}>
+                My Orders
+              </MenuItem>
+              {user?.role === "admin" && (
+                <MenuItem onClick={() => { navigate("/admin"); setUserAnchor(null); }}>
+                  Admin Dashboard
+                </MenuItem>
+              )}
+              <Divider />
+              <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
+                Logout
+              </MenuItem>
+            </Menu>
+          </>
+        ) : (
+          <IconButton onClick={() => navigate("/login")}>
+            <Person2OutlinedIcon />
+          </IconButton>
+        )}
       </Stack>
     </Container>
   );

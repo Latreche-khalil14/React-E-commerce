@@ -1,229 +1,156 @@
+// @ts-nocheck
 import {
-  Box,
-  Container,
-  Drawer,
-  IconButton,
-  ListItemIcon,
-  ListItemText,
-  Stack,
-  Typography,
-  useMediaQuery,
-  useTheme,
-  Button,
-  Menu,
-  MenuItem,
-  Accordion,
-  AccordionSummary,
-  List,
-  ListItem,
-  ListItemButton,
+  Accordion, AccordionSummary, Box, Button, Container, Drawer,
+  IconButton, List, ListItem, ListItemButton, ListItemIcon,
+  ListItemText, Menu, MenuItem, Stack, Typography,
+  useMediaQuery, useTheme,
 } from "@mui/material";
-
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import WindowIcon from "@mui/icons-material/Window";
 import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
-  SportsEsportsOutlined,
-  ElectricBikeOutlined,
-  LaptopChromebookOutlined,
-  MenuBookOutlined,
-  Close,
+  CheckroomOutlined, DevicesOutlined, DirectionsBikeOutlined,
+  SportsEsportsOutlined, MenuBookOutlined, FitnessCenterOutlined,
+  ChildCareOutlined, CategoryOutlined, Close,
 } from "@mui/icons-material";
-
-
 import Links from "./Links";
+import { getCategoriesApi } from "../../api/categories.api";
+
+const CATEGORY_ICONS = {
+  Men:         <CheckroomOutlined fontSize="small" />,
+  Women:       <CheckroomOutlined fontSize="small" />,
+  Electronics: <DevicesOutlined fontSize="small" />,
+  Bikes:       <DirectionsBikeOutlined fontSize="small" />,
+  Games:       <SportsEsportsOutlined fontSize="small" />,
+  Books:       <MenuBookOutlined fontSize="small" />,
+  Sports:      <FitnessCenterOutlined fontSize="small" />,
+  Kids:        <ChildCareOutlined fontSize="small" />,
+};
+
+const navLinks = [
+  { title: "Home",         path: "/" },
+  { title: "Men",          path: "/?gender=men" },
+  { title: "Women",        path: "/?gender=women" },
+  { title: "Electronics",  path: "/?categorySlug=electronics" },
+  { title: "Sports",       path: "/?categorySlug=sports" },
+  { title: "New Arrivals", path: "/?sort=newest" },
+  { title: "Sale",         path: "/?sort=price-asc" },
+];
 
 const Header3 = () => {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+  const [anchorEl,   setAnchorEl]   = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const theme     = useTheme();
+  const navigate  = useNavigate();
+  const isDesktop = useMediaQuery("(min-width:1200px)");
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  useEffect(() => {
+    getCategoriesApi()
+      .then((res) => setCategories(res.data.categories))
+      .catch(() => {});
+  }, []);
 
-  const handleClose = () => {
+  const handleCategoryClick = (category) => {
     setAnchorEl(null);
-  };
-
-  const theme = useTheme();
-
-  const [state, setState] = useState({
-    right: false,
-  });
-
-  const toggleDrawer = (anchor, open) => (event) => {
-    if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
-
-    setState({ ...state, [anchor]: open });
+    setDrawerOpen(false);
+    navigate(`/?categoryId=${category._id}`);
   };
 
   return (
-    <Container
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        mt: 5,
-      }}
-    >
-   
+    <Container sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 5 }}>
+
+      {/* ── Categories Dropdown ── */}
       <Box>
         <Button
-          id="basic-button"
-          aria-controls={open ? "basic-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
-          onClick={handleClick}
-          sx={{
-            width: 222,
-            // @ts-ignore
-            bgcolor: theme.palette.myColor?.main || "#f0f0f0", // fallback color
-            color: theme.palette.text.secondary,
-          }}
+          onClick={(e) => setAnchorEl(e.currentTarget)}
+          sx={{ width: 222, bgcolor: theme.palette.myColor?.main || "#f0f0f0", color: theme.palette.text.secondary }}
         >
           <WindowIcon />
-          <Typography sx={{ padding: 0, textTransform: "capitalize", mx: 1 }}>
-            Categories
-          </Typography>
+          <Typography sx={{ textTransform: "capitalize", mx: 1 }}>Categories</Typography>
           <Box flexGrow={1} />
           <KeyboardArrowRightOutlinedIcon />
         </Button>
 
         <Menu
-          id="basic-menu"
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          MenuListProps={{
-            "aria-labelledby": "basic-button",
-          }}
-          sx={{
-            ".MuiPaper-root": {
-              width: 220,
-              // @ts-ignore
-              bgcolor: theme.palette.myColor?.main || "#f0f0f0",
-            },
-          }}
+          anchorEl={anchorEl} open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+          sx={{ ".MuiPaper-root": { width: 230, bgcolor: theme.palette.myColor?.main || "#f0f0f0" } }}
         >
-          <MenuItem onClick={handleClose}>
-            <ListItemIcon>
-              <ElectricBikeOutlined fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Bikes</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={handleClose}>
-            <ListItemIcon>
-              <LaptopChromebookOutlined fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Electronics</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={handleClose}>
-            <ListItemIcon>
-              <MenuBookOutlined fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Books</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={handleClose}>
-            <ListItemIcon>
-              <SportsEsportsOutlined fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Games</ListItemText>
-          </MenuItem>
+          {categories.map((cat) => (
+            <MenuItem key={cat._id} onClick={() => handleCategoryClick(cat)}>
+              <ListItemIcon>
+                {CATEGORY_ICONS[cat.name] || <CategoryOutlined fontSize="small" />}
+              </ListItemIcon>
+              <ListItemText>{cat.name}</ListItemText>
+            </MenuItem>
+          ))}
         </Menu>
       </Box>
 
-   
-      {useMediaQuery("(min-width:1200px)") && (
-        <Stack gap={4} direction={"row"} alignItems={"center"}>
-          <Links title={"Home"} />
-          <Links title={"Mega Menu"} />
-          <Links title={"Full Screen Menu"} />
-          <Links title={"pages"} />
-          <Links title={"User Account"} />
-          <Links title={"Vendor Account"} />
+      {/* ── Desktop Nav Links ── */}
+      {isDesktop && (
+        <Stack gap={4} direction="row" alignItems="center">
+          {navLinks.map((link) => (
+            <Links key={link.title} title={link.title} path={link.path} />
+          ))}
         </Stack>
       )}
 
-      
-      {useMediaQuery("(max-width:1200px)") && (
-        <IconButton onClick={toggleDrawer("right", true)}>
+      {/* ── Mobile Hamburger ── */}
+      {!isDesktop && (
+        <IconButton onClick={() => setDrawerOpen(true)}>
           <MenuIcon />
         </IconButton>
       )}
 
-     
+      {/* ── Mobile Drawer ── */}
       <Drawer
-        anchor="right"
-        open={state.right}
-        onClose={toggleDrawer("right", false)}
-        sx={{
-          ".MuiPaper-root": {
-            width: 300,pr:2
-          },
-        }}
-       >
-        <Box
-          sx={{
-            px: 2,
-            pt: 10,
-            position: "relative",
-            height: "100%",
-          }}
-        >
-         
+        anchor="right" open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        sx={{ ".MuiPaper-root": { width: 300, pr: 2 } }}
+      >
+        <Box sx={{ px: 2, pt: 10, position: "relative", height: "100%" }}>
           <IconButton
-            sx={{
-              position: "absolute",
-              top: 10,
-              left: 10,
-              ":hover": { color: "red", rotate: "180deg", transition: "0.3s" },
-            }}
-            onClick={toggleDrawer("right", false)}
+            sx={{ position: "absolute", top: 10, left: 10, ":hover": { color: "red", rotate: "180deg", transition: "0.3s" } }}
+            onClick={() => setDrawerOpen(false)}
           >
             <Close />
           </IconButton>
 
-       
-          {[
-            { mainLink: "Home", subLinks: ["Link 1", "Link 2", "Link 3"] },
-            { mainLink: "Mega menu", subLinks: ["Link 1", "Link 2", "Link 3"] },
-            {
-              mainLink: "Full Screen Menu",
-              subLinks: ["Link 1", "Link 2", "Link 3"],
-            },
-            { mainLink: "Pages", subLinks: ["Link 1", "Link 2", "Link 3"] },
-            {
-              mainLink: "User Account",
-              subLinks: ["Link 1", "Link 2", "Link 3"],
-            },
-            {
-              mainLink: "Vendor Account",
-              subLinks: ["Link 1", "Link 2", "Link 3"],
-            },
-          ].map((item) => (
-            <Accordion key={item.mainLink} elevation={0}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>{item.mainLink}</Typography>
+          {navLinks.map((link) => (
+            <Accordion key={link.title} elevation={0} disableGutters>
+              <AccordionSummary>
+                <Typography
+                  sx={{ cursor: "pointer", width: "100%", py: 0.5 }}
+                  onClick={() => { navigate(link.path); setDrawerOpen(false); }}
+                >
+                  {link.title}
+                </Typography>
               </AccordionSummary>
-              <List sx={{ py: 0, my: 0 }}>
-                {item.subLinks.map((link) => (
-                  <ListItem key={link} sx={{ py: 0, my: 0 }}>
-                    <ListItemButton>
-                      <ListItemText primary={link} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
             </Accordion>
           ))}
+
+          <Accordion elevation={0} disableGutters>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>All Categories</Typography>
+            </AccordionSummary>
+            <List sx={{ py: 0 }}>
+              {categories.map((cat) => (
+                <ListItem key={cat._id} disablePadding>
+                  <ListItemButton onClick={() => handleCategoryClick(cat)}>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {CATEGORY_ICONS[cat.name] || <CategoryOutlined fontSize="small" />}
+                    </ListItemIcon>
+                    <ListItemText primary={cat.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Accordion>
         </Box>
       </Drawer>
     </Container>
